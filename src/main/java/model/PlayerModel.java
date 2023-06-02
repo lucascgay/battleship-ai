@@ -1,15 +1,16 @@
 package model;
 
+import controller.Controller;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
 
-public class PlayerModel implements Player {
-
-  int[][] board;
+public class PlayerModel extends AbstractPlayer implements Player {
   String name;
-
+  AiModel aiModel;
+  public PlayerModel(Controller controller) {
+    super(controller);
+  }
 
   @Override
   public String name() {
@@ -18,120 +19,86 @@ public class PlayerModel implements Player {
 
   @Override
   public List<Ship> setup(int height, int width, Map<ShipType, Integer> specifications) {
-
-    //for each ship type I need a ShipType and a list of Coord
-    int[][] board = new int[height][width];
     List<Ship> shipPositions = new ArrayList<>();
+    int rowOffset = 0;
 
     if (height > width) {
-      int space;
-      int counter = 0;
+      for (ShipType shipType : ShipType.values()) {
+        int space = height - shipType.shipSize + 1;
 
-      space = ShipType.CARRIER.shipSize - height;
+        for (int i = 0; i < specifications.get(shipType); i++) {
+          int startingPoint = (int) (Math.random() * space);
+          List<Coord> coords = new ArrayList<>();
 
-      for (int i = 0; i < specifications.get(ShipType.CARRIER); i ++) {
-        int startingPoint = (int) (Math.random() * space);
-        List<Coord> coords = new ArrayList<>();
-        for (int k = startingPoint; k < ShipType.CARRIER.shipSize; k ++) {
-          board[i][k] = 1;
-          coords.add(new Coord(i, k));
+          for (int k = startingPoint; k < startingPoint + shipType.shipSize; k++) {
+            coords.add(new Coord(rowOffset + i, k));
+          }
+
+          Ship ship = new Ship(coords, shipType);
+          shipPositions.add(ship);
         }
-        counter ++;
-        Ship ship = new Ship(coords, ShipType.CARRIER);
-        shipPositions.add(ship);
+
+        rowOffset += specifications.get(shipType);
       }
+    } else {
+      for (ShipType shipType : ShipType.values()) {
+        int space = width - shipType.shipSize + 1;
 
-      space = ShipType.BATTLESHIP.shipSize - height;
+        for (int i = 0; i < specifications.get(shipType); i++) {
+          int startingPoint = (int) (Math.random() * space);
+          List<Coord> coords = new ArrayList<>();
 
-      for (int i = 0; i < specifications.get(ShipType.BATTLESHIP); i ++) {
-        int startingPoint = (int) (Math.random() * space);
-        List<Coord> coords = new ArrayList<>();
-        for (int k = startingPoint; k < ShipType.BATTLESHIP.shipSize; k ++) {
-          board[k][i + counter - 1] = 1;
-          coords.add(new Coord(k, i));
+          for (int k = startingPoint; k < startingPoint + shipType.shipSize; k++) {
+            coords.add(new Coord(k, rowOffset + i));
+          }
+
+          Ship ship = new Ship(coords, shipType);
+          shipPositions.add(ship);
         }
-        counter ++;
-        Ship ship = new Ship(coords, ShipType.BATTLESHIP);
-        shipPositions.add(ship);
+
+        rowOffset += specifications.get(shipType);
       }
-
-      space = ShipType.DESTROYER.shipSize - height;
-
-      for (int i = 0; i < specifications.get(ShipType.DESTROYER); i ++) {
-        int startingPoint = (int) (Math.random() * space);
-        List<Coord> coords = new ArrayList<>();
-        for (int k = startingPoint; k < ShipType.DESTROYER.shipSize; k ++) {
-          board[k][i + counter - 1] = 1;
-          coords.add(new Coord(k, i));
-        }
-        counter ++;
-        Ship ship = new Ship(coords, ShipType.BATTLESHIP);
-        shipPositions.add(ship);
-      }
-
-      space = ShipType.SUBMARINE.shipSize - height;
-
-      for (int i = 0; i < specifications.get(ShipType.SUBMARINE); i ++) {
-        int startingPoint = (int) (Math.random() * space);
-        List<Coord> coords = new ArrayList<>();
-        for (int k = startingPoint; k < ShipType.SUBMARINE.shipSize; k ++) {
-          board[k][i + counter - 1] = 1;
-          coords.add(new Coord(k, i));
-        }
-        counter ++;
-        Ship ship = new Ship(coords, ShipType.SUBMARINE);
-        shipPositions.add(ship);
-      }
-
-      for (int i = 0; i < board.length; i++) {
-        for (int j = 0; j < board[i].length; j++) {
-          System.out.print(board[i][j] + " ");
-        }
-        System.out.println(); // Move to the next line after printing each row
-      }
-
-      //placeTopdown();
-
-
     }
 
-      //placeSideways();
-
-
+    shipList = shipPositions;
     return shipPositions;
-  }
-
-
-
-  private List<Ship> placeTopdown(){
-    return null;
-
-
-  }
-  private List<Ship> placeSideways() {
-    return null;
   }
 
   @Override
   public List<Coord> takeShots() {
-
-    return null;
+    return controller.playerCallTakeShot();
   }
 
+
+  // aimodel.successfullhits(playermodel.reportDamage(aimodel.takeShots()));
   @Override
   public List<Coord> reportDamage(List<Coord> opponentShotsOnBoard) {
 
-    for (Coord shot : opponentShotsOnBoard) {
-      //for (all coords of boat positions)
-        //if (shot.equals(boatcoords))
-    }
+    if (opponentShotsOnBoard == null) {
+      return new ArrayList<>();
+    } else {
+      List<Coord> damageCoord = new ArrayList<>();
 
-    return null;
+      for (Coord shot : opponentShotsOnBoard) {
+        for (Ship ship : shipList) {
+          List<Coord> temp = ship.coords;
+          for (Coord coord : temp) {
+            if ((shot.x == coord.x) && (shot.y == coord.y)) {
+              damageCoord.add(shot);
+            }
+          }
+        }
+      }
+
+      allDamagedCoord.addAll(damageCoord);
+      return allDamagedCoord;
+    }
   }
+
 
   @Override
   public void successfulHits(List<Coord> shotsThatHitOpponentShips) {
-
+    aiModel.reportDamage(aiModel.takeShots());
   }
 
   @Override
