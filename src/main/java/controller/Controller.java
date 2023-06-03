@@ -7,12 +7,31 @@ import model.AiModel;
 import view.AiView;
 import view.PlayerView;
 
+/**
+ * The Controller class manages the game flow and interactions between the player, AI, and views
+ * in the game of BattleSalvo.
+ */
 public class Controller {
+  /**
+   * The player model instance.
+   */
   private final PlayerModel playermodel;
+  /**
+   * The AI model instance.
+   */
   private final AiModel aimodel;
+  /**
+   * The player view instance.
+   */
   private PlayerView playerview;
+  /**
+   * The AI view instance.
+   */
   private AiView aiview;
 
+  /**
+   * Constructs a Controller object and initializes the player and AI models.
+   */
   public Controller() {
     playermodel = new PlayerModel(this);
     aimodel = new AiModel(this);
@@ -20,7 +39,10 @@ public class Controller {
     aimodel.setPlayer(playermodel);
   }
 
-
+  /**
+   * Runs the game by initializing the views, performing setup, and executing the salvo stage
+   * until the game ends.
+   */
   public void run() {
 
     playerview = new PlayerView();
@@ -36,7 +58,7 @@ public class Controller {
     //Salvo Stage
 
 
-    while (!(playermodel.unsunkShips() == 0) || !(aimodel.unsunkShips() == 0)) {
+    while (!(playermodel.unsunkShips() == 0) || !(aimodel.unsunkShips() == 0) ) {
 
       aiview.showBoard(aimodel.returnShipList(), aimodel.reportDamage(playerShots),
           aimodel.reportMisses(playerShots));
@@ -56,11 +78,21 @@ public class Controller {
 
   }
 
+  /**
+   * Retrieves the shots taken by the player.
+   *
+   * @return the locations of shots taken by the player
+   */
   public List<Coord> playerCallTakeShot() {
     return playerview.takeShots(playermodel.unsunkShips(), aimodel.returnAllDamagedCoord(),
         aimodel.returnAllMissCoord());
   }
 
+  /**
+   * Retrieves the shots taken by the AI.
+   *
+   * @return the locations of shots taken by the AI
+   */
   public List<Coord> aiCallTakeShot() {
     return aiview.takeShots(aimodel.unsunkShips(), playermodel.returnAllDamagedCoord(),
         playermodel.returnAllMissCoord());
