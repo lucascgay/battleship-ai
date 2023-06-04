@@ -44,7 +44,6 @@ public class Controller {
    * until the game ends.
    */
   public void run() {
-
     playerview = new PlayerView();
     //Welcome Message and Board Parameters
     int[] dimArray = playerview.chooseDimensions();
@@ -58,24 +57,24 @@ public class Controller {
     //Salvo Stage
 
 
-    while (!(playermodel.unsunkShips() == 0) || !(aimodel.unsunkShips() == 0) ) {
-
+    while (!(playermodel.unsunkShips() == 0) || !(aimodel.unsunkShips() == 0)) {
       aiview.showBoard(aimodel.returnShipList(), aimodel.reportDamage(playerShots),
           aimodel.reportMisses(playerShots));
 
       playerview.showBoard(playermodel.returnShipList(), playermodel.reportDamage(aiShots),
           playermodel.reportMisses(aiShots));
 
+      if (playermodel.unsunkShips() == 0) {
+        System.out.print("\nYOU LOST...AI WINS");
+        break;
+      } else if (aimodel.unsunkShips() == 0){
+        System.out.print("\nYOU WIN...AI LOSES");
+        break;
+      }
+
       aiShots = this.aiCallTakeShot();
       playerShots = this.playerCallTakeShot();
-
     }
-    if (playermodel.unsunkShips() == 0) {
-      System.out.print("\n YOU LOST...AI WINS");
-    } else {
-      System.out.print("\n YOU WIN...AI LOSES");
-    }
-
   }
 
   /**
